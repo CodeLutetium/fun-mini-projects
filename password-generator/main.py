@@ -1,5 +1,15 @@
 import numpy as np
 import random
+import pyperclip
+import getpass
+
+# For cryptography
+import base64
+import os
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
 
 def generate_passphrase(length: int, seed=None) -> str:
     """Generates a passphrase of the given length using the given seed.
@@ -38,6 +48,92 @@ def load_words() -> list[str]:
         return f.read().splitlines()
 
 
+def check_pw_file() -> None:
+    """
+    Check if passwords.csv exists, if not create it."""
+    try:
+        with open("passwords.csv", "r") as f:
+            pass
+    except FileNotFoundError:
+        # Disclaimer
+        input("Disclaimer: This program was written for fun, please do not use it to generate/ store password for sensitive accounts. NEVER store passwords in plain text! Press enter to continue.")
+
+        create_master_pw()
+
+        # Create passwords.csv
+        with open("passwords.csv", "w") as f:
+            pass
+
+
+def create_master_pw() -> None:
+    # Create salt and save it
+    salt = os.urandom(32)
+    with open("salt", "wb") as f:
+        f.write(salt)
+
+    # Get master password from user
+    isValidPassword = False
+    while isValidPassword != True:
+        master_password = getpass.getpass(
+            "Enter master password. The master password will be used to encrypt and decrypt your stored passwords. \nMaster password (at least 8 characters): ")
+
+        # @TODO Add function to check if master password is sufficiently strong
+        if len(master_password) < 8:
+            print("Master password should be at least 8 characters.")
+        else:
+            print("Master password successfully created")
+            isValidPassword = True
+            master_password = str.encode(master_password)
+
+    # Hash salted master password and store
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000
+    )
+    hashed_pw = kdf.derive(master_password)
+    with open("master_pw", "wb") as f:
+        f.write(hashed_pw)
+        print("Master password successfully stored.")
+
+
+def verify_master_pw() -> bool:
+    # Load salt
+    try:
+        with open("salt", "rb") as f:
+            salt = f.read()
+    except FileNotFoundError:
+        print("Salt not found.")
+        return False
+
+    # Get master password from user
+    master_password = getpass.getpass("Enter master password: ")
+
+    # Retrieve stored hashed master password
+    try:
+        with open("master_pw", "rb") as f:
+            stored_hashed_pw = f.read()
+            stored_hashed_pw = base64.urlsafe_b64encode(stored_hashed_pw)
+    except FileNotFoundError:
+        print("Master password not found.")
+        return False
+
+    # Create kdf object
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000
+    )
+
+    # Hash user input and compare to stored hash
+    hashed_pw = base64.urlsafe_b64encode(
+        kdf.derive(str.encode(master_password)))
+
+    return hashed_pw == stored_hashed_pw
+
+
 def main() -> None:
     length = input("Enter passphrase length (at least 4): ")
     try:
@@ -48,9 +144,23 @@ def main() -> None:
     seed = input("Enter seed for random number generator (optional): ")
 
     seed = random.seed(seed)
-    
+
     passphrase = generate_passphrase(passphrase_length, seed)
+    print("Your passphrase is: ")
     print(passphrase)
+
+    pyperclip.copy(passphrase)
+    print("Passphrase automatically copied to clipboard.")
+
+    response = input(
+        "Do you want to save your password to a text file? (y/n): ")
+    if response.lower() == "y":
+        check_pw_file()
+        with open("passwords.csv", "a") as f:
+            f.write(passphrase)
+        print("Passphrase saved to passwords.csv")
+    else:
+        print("Password not saved")
 
 
 if __name__ == "__main__":
