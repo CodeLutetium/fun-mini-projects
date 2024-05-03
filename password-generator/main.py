@@ -5,8 +5,15 @@ import pyperclip
 from pwgen import generate_passphrase, generate_password
 from login_handler import LoginHandler
 
+# Global
+login_handler = LoginHandler()
+
 
 def generate_passphrase_main() -> None:
+    """
+    Main function to generate passphrase. 
+    Asks user for passphrase length and seed for random number generator.
+    """
     length = input("Enter passphrase length (at least 4): ")
     try:
         passphrase_length = int(length)
@@ -33,10 +40,18 @@ def generate_passphrase_main() -> None:
 
 
 def generate_password_main() -> None:
+    """
+    Main function to generate password. 
+    Asks user for password length and seed for random number generator.
+    """
     raise NotImplementedError
 
 
 def view_passwords() -> None:
+    """
+    Function to view stored passwords in password.csv.
+    Requires user to have logged in with master password.
+    """
     if login_handler.is_logged_in == False:
         login_handler.login()
 
@@ -49,6 +64,10 @@ def view_passwords() -> None:
 
 
 def store_password(passphrase: str) -> None:
+    """
+    Function to store passphrase in passwords.csv.
+    Requires user to have logged in with master password.
+    """
     if login_handler.is_logged_in == False:
         login_handler.login()
 
@@ -62,9 +81,6 @@ def store_password(passphrase: str) -> None:
         f.write(f"{website}, {passphrase}\n")
 
     print("Passphrase saved to passwords.csv")
-
-
-login_handler = LoginHandler()
 
 
 def main() -> None:

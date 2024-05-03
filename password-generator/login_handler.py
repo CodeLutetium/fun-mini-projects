@@ -1,6 +1,3 @@
-"""
-Login handler class to handler user login
-"""
 import getpass
 import os
 import scrypt
@@ -11,6 +8,9 @@ import base64
 
 
 class LoginHandler():
+    """
+    Login handler class to handler user login
+    """
     def __init__(self):
         self.salt = self.retrieve_salt()
         self.master_password = None
@@ -22,9 +22,6 @@ class LoginHandler():
     def retrieve_salt(self) -> bytes:
         """
         Retrieve salt from the directory. If the salt is not found, generate a new salt and save it in the directory.
-
-        Args:
-            None
 
         Returns:
             bytes: Salt
@@ -43,9 +40,6 @@ class LoginHandler():
         """
         Checks if master password exists in directory. Retrieves it if exists.
 
-        Args:
-            None
-
         Returns:
             bool: True if master password exists, False otherwise
         """
@@ -59,12 +53,6 @@ class LoginHandler():
     def login(self) -> None:
         """
         Verify the master password with the stored master password. Once verified, logs the user in
-
-        Args:
-            None
-
-        Returns:
-            None
         """
         if self.has_master_password == False:
             self.create_master_pw()
@@ -85,12 +73,6 @@ class LoginHandler():
     def create_master_pw(self) -> None:
         """
         Create a master password and store the hash in the directory
-
-        Args:
-            None
-
-        Returns:
-            None
         """
         isValidPassword = False
         while isValidPassword != True:
@@ -121,13 +103,8 @@ class LoginHandler():
 
     def init_fernet(self) -> None:
         """
-        Initialize the Fernet object with the master password
-
-        Args:
-            None
-
-        Returns:
-            None
+        Initialize the Fernet object with the master password. 
+        Make sure Fernet is initialized before reading/ writing to passwords.csv
         """
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
