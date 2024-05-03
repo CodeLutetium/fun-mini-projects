@@ -9,6 +9,7 @@ import os
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import scrypt
 
 
 def generate_passphrase(length: int, seed=None) -> str:
@@ -65,6 +66,45 @@ def check_pw_file() -> None:
             pass
 
 
+def store_password(passphrase: str) -> None:
+    # Check for existence of passwords.csv
+    check_pw_file()
+
+    # Retrieve salt
+    try:
+        with open("salt", "rb") as f:
+            salt = f.read()
+    except FileNotFoundError:
+        print("Salt not found.")
+        return
+    
+    # Create kdf object
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000
+    )
+
+    # Verify master password
+    master_password = getpass.getpass("Enter master password: ")
+    if not verify_master_pw(master_password, salt):
+        print("Master password is incorrect.")
+        return
+    
+    # Encrypt passphrase
+    key = base64.urlsafe_b64encode(kdf.derive(str.encode(master_password)))
+    f = Fernet(key)
+    passphrase = f.encrypt(str.encode(passphrase))
+
+    # Save encrypted passphrase to passwords.csv
+    website = input("Enter website: ")
+    with open("passwords.csv", "a") as f:
+        f.write(f"{website}, {passphrase}\n")
+
+    print("Passphrase saved to passwords.csv")
+
+
 def create_master_pw() -> None:
     # Create salt and save it
     salt = os.urandom(32)
@@ -86,30 +126,13 @@ def create_master_pw() -> None:
             master_password = str.encode(master_password)
 
     # Hash salted master password and store
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=480000
-    )
-    hashed_pw = kdf.derive(master_password)
+    hashed_pw = scrypt.hash(master_password, salt)
     with open("master_pw", "wb") as f:
         f.write(hashed_pw)
         print("Master password successfully stored.")
 
 
-def verify_master_pw() -> bool:
-    # Load salt
-    try:
-        with open("salt", "rb") as f:
-            salt = f.read()
-    except FileNotFoundError:
-        print("Salt not found.")
-        return False
-
-    # Get master password from user
-    master_password = getpass.getpass("Enter master password: ")
-
+def verify_master_pw(master_password: str, salt: bytes) -> bool:
     # Retrieve stored hashed master password
     try:
         with open("master_pw", "rb") as f:
@@ -119,19 +142,8 @@ def verify_master_pw() -> bool:
         print("Master password not found.")
         return False
 
-    # Create kdf object
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=480000
-    )
-
     # Hash user input and compare to stored hash
-    hashed_pw = base64.urlsafe_b64encode(
-        kdf.derive(str.encode(master_password)))
-
-    return hashed_pw == stored_hashed_pw
+    return stored_hashed_pw == scrypt.hash(str.encode(master_password), salt)
 
 
 def main() -> None:
@@ -155,10 +167,7 @@ def main() -> None:
     response = input(
         "Do you want to save your password to a text file? (y/n): ")
     if response.lower() == "y":
-        check_pw_file()
-        with open("passwords.csv", "a") as f:
-            f.write(passphrase)
-        print("Passphrase saved to passwords.csv")
+        store_password(passphrase)
     else:
         print("Password not saved")
 
