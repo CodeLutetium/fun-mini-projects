@@ -1,6 +1,7 @@
 import numpy as np
+import random
 
-def generate_passphrase(length: int, seed=42) -> str:
+def generate_passphrase(length: int, seed=None) -> str:
     """Generates a passphrase of the given length using the given seed.
 
     Args:
@@ -15,6 +16,10 @@ def generate_passphrase(length: int, seed=42) -> str:
         print("Passphrase length should be at least 4. Default length of 4 selected.")
         length = 4
 
+    if length > 20:
+        print("Passphrase is too long. Limit of 20 selected")
+        length = 20
+
     rng_generator = np.random.default_rng(seed)
     words = load_words()
     MAX_INDEX = len(words) - 1
@@ -25,10 +30,6 @@ def generate_passphrase(length: int, seed=42) -> str:
 
 
 def generate_password(length: int, seed: str) -> str:
-    raise NotImplementedError
-
-
-def generate_seed(seed: int) -> int:
     raise NotImplementedError
 
 
@@ -45,8 +46,10 @@ def main() -> None:
         print("Invalid input, please enter an integer. Default length of 4 selected.")
         passphrase_length = 4
     seed = input("Enter seed for random number generator (optional): ")
+
+    seed = random.seed(seed)
     
-    passphrase = generate_passphrase(passphrase_length)
+    passphrase = generate_passphrase(passphrase_length, seed)
     print(passphrase)
 
 
