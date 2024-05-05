@@ -1,1 +1,0 @@
-# Password Generator mini project
