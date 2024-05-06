@@ -2,13 +2,6 @@
 Functions to generate passwords and passphrases
 """
 import numpy as np
-import base64
-import os
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import scrypt
-
 
 def generate_passphrase(length: int, seed=None) -> str:
     """Generates a passphrase of the given length using the given seed.
