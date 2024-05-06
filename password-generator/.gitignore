@@ -1,2 +1,5 @@
 .pwgen-venv
 wordlist.txt
+master_pw
+passwords.csv
+salt
