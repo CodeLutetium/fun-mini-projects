@@ -124,3 +124,8 @@ SELECT * FROM "Users";
 Some notes: 
 - Remember to add semicolon ';' at the end of statement
 - Table name must be surrounded by `"` (double quotes not single quotes)\
+
+## Connecting to Postgres with Python
+From here, everything should be quite easy. 
+
+Running hello-postgres.py, we are able to see the rows in our postgres database "Users".
