@@ -1,5 +1,5 @@
 # hello-docker (blog)
-I know it says README.md in the file title but this is more of a blog for me to document my process of getting started with docker. 
+I know it says README.md in the file title but this is more of a blog for me to document my process of getting started with docker. I titled it 'README' (not clickbait) so that github will show this page when I open the directory without needing me to open the markdown. 
 
 ## Objective
 Post data into a postgres database and containerize the application using docker. Let's go!
@@ -63,3 +63,64 @@ docker run hello-python
 # Output:
 > hello world
 ```
+
+## Getting started with Postgres 
+Let's move on to postgres. Similar to Python, we will start by test pulling the postgres image to my machine with `docker pull postgres:14.5`.
+
+To run the postgres container, we run the following command:
+```bash
+docker run -e POSTGRES_PASSWORD=admin -d postgres
+```
+Some notes:
+- We can use the flag `--name` to give our container a custom name. Without this argument, docker will automatically generate a random name for us.   
+- postgres requires a password to function properly, which is why a default password of admin is specified.
+
+When we run `docker ps`, we can see that a container running postgres at port 5432.
+
+```bash
+CONTAINER ID   IMAGE      COMMAND                  CREATED         STATUS         PORTS      NAMES
+e0db6a77cc42   postgres   "docker-entrypoint.s…"   9 seconds ago   Up 7 seconds   5432/tcp   nice_mcclintock
+```
+
+And if you try to connect to that instance of postgres using pgadmin...it doesn't work. Why?
+
+Luckily my current internship at Credit Agricole gave me some experience working with helm charts and minikube, so I had a rough sense why. I didn't port forward! Let's try running it again and specify the ports using the `-p` flag.
+
+```bash
+# Kill previous instance. Get the container id by running `docker ps`
+docker stop <container-id>
+# Verify instance has been killed (should be empty)
+docker ps
+
+# Now we run it with port forwarding
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=admin -d postgres
+```
+
+Some notes again: 
+- MAKE SURE YOU HAVE **NO OTHER POSTGRES INSTANCES** RUNNING ON YOUR MACHINE!!
+
+I will now try to connect to my container using pgadmin by connecting to localhost:5432 with the password I had set earlier. It successfully connects, and there is no tables or anything in my database (named postgres) because I have not done anything yet. 
+
+My next step now is to try and create a table in pgadmin and insert some data there (which I won't be explaining how here because...basic GUI), and see if I can query it from the interactive shell. 
+
+#### Getting into the docker container's shell (step by step)
+```sh
+docker exec -it <container-name> sh
+su postgres
+psql
+```
+
+Let's perform a simple select statement from the shell:
+```sql
+SELECT * FROM "Users";
+
+-- We get: 
+ id | name  | age 
+----+-------+-----
+  1 | John  |  20
+  2 | Alice |  24
+```
+
+Some notes: 
+- Remember to add semicolon ';' at the end of statement
+- Table name must be surrounded by `"` (double quotes not single quotes)\
