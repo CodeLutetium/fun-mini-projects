@@ -1,6 +1,6 @@
 # rust-postgres
 
-Explore connecting to a postgres instance using [sqlx](https://crates.io/crates/sqlx/0.8.2). In this project, I will attempt to connect to a postgres instance and perform simple query and insert operations.
+Explore connecting to a postgres instance using [sqlx](https://crates.io/crates/sqlx/0.8.2). In this project, I will connect to a postgres instance and perform simple query and insert operations.
 
 ## Getting started
 

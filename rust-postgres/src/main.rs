@@ -1,7 +1,7 @@
 use sqlx::postgres::PgPoolOptions;
 use sqlx::FromRow;
 use rand::Rng;
-use names::Generator;
+use faker_rand::en_us::names::FirstName;
 
 #[derive(Debug, FromRow)]
 struct User {
@@ -12,9 +12,6 @@ struct User {
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    // For generating random names
-    let mut generator = Generator::default();
-
     // Check that username, password, port and database is correct.
     let pg_connection_str: &str = "postgres://postgres:admin@localhost:5432/transactions";
     let pool = PgPoolOptions::new()
@@ -31,7 +28,7 @@ async fn main() -> Result<(), sqlx::Error> {
     // Insert new user
     let new_user: User = User {
         id: row.id + 1,     // Increment last result by 1
-        name: "Jane".to_string(),
+        name: rand::thread_rng().gen::<FirstName>().to_string(),
         cash: rand::thread_rng().gen_range(0..100000),
     };
     sqlx::query("INSERT INTO users VALUES ($1, $2, $3)")
