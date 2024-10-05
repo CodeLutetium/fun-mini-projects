@@ -1,5 +1,5 @@
 use sqlx::postgres::PgPoolOptions;
-use sqlx::FromRow;
+use sqlx::{migrate, FromRow};
 use rand::Rng;
 use faker_rand::en_us::names::FirstName;
 
@@ -18,6 +18,9 @@ async fn main() -> Result<(), sqlx::Error> {
         .max_connections(5)
         .connect(pg_connection_str)
         .await?;
+
+    // Run migrations
+    migrate!().run(&pool).await?;
 
     // Fetch one row (last row)
     let row: User = sqlx::query_as("SELECT * FROM public.users ORDER BY id DESC LIMIT 1")
