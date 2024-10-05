@@ -9,8 +9,10 @@ Make sure you have an instance of postgres running. The database name is called 
 ### Running postgres container with docker
 
 ```sh
-docker run -p 5432:5432 -e POSTGRES_PASSWORD=admin -d postgres
+docker run -p 5432:5432 -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=transactions -d postgres
 ```
+
+This creates a Docker container with PostgresSQL running, with port 5432 exposed. The default superuser password is set to admin, and a default database transactions is created. `-d` allows the container to run in the background after the script terminates. 
 
 ### Create simple table instance
 
