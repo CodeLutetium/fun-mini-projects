@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: backend
+      target: builder
+    environment:
+      - DOCKER_BUILDKIT=1
+    develop:
+      watch:
+        - action: rebuild
+          files:  
+            - ./**/*.go
+            - ./go.mod
+            - ./go.sum
+            - ./backend
+          path: ./backend/
+          target: ./
+    ports:
+      - 8080:8080
