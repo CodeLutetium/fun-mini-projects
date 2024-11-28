@@ -7,7 +7,7 @@ Live reload takes approx. 10s with the default Dockerfile. In this project, I op
 Also check out [Air](https://github.com/air-verse/air) as an alternative to live reloading in Golang.
 
 ## Getting started
-To start development, simply run `docker compose watch`. Edit `main.go` and watch your changes get updated live. To ping the container, run `curl localhost:8080/ping`.
+To start development, simply run `docker compose up --watch`. Edit `main.go` and watch your changes get updated live. To ping the container, run `curl localhost:8080/ping`.
 
 ## References
 [eblog's fast docker](https://eblog.fly.dev/fastdocker.html)
